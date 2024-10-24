@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการงานและกำหนดส่ง</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .login-form {
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .course-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .deadline {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- หน้า Login -->
+<div class="login-form card" id="loginForm">
+    <h2>เข้าสู่ระบบสำหรับผู้ดูแล</h2>
+    <div class="form-group">
+        <label>ชื่อผู้ใช้:</label>
+        <input type="text" id="username">
+    </div>
+    <div class="form-group">
+        <label>รหัสผ่าน:</label>
+        <input type="password" id="password">
+    </div>
+    <button onclick="login()">เข้าสู่ระบบ</button>
+</div>
+
+<!-- หน้าแสดงรายการงาน -->
+<div class="container" id="publicView">
+    <h1>รายการงานและกำหนดส่ง</h1>
+    <div id="courseList"></div>
+</div>
+
+<!-- หน้าแอดมิน -->
+<div class="container card" id="adminPanel" style="display: none;">
+    <h2>จัดการรายการงาน</h2>
+    <div class="form-group">
+        <label>ชื่อวิชา:</label>
+        <input type="text" id="courseName">
+    </div>
+    <div class="form-group">
+        <label>รายละเอียด:</label>
+        <textarea id="courseDetails" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+        <label>กำหนดส่ง:</label>
+        <input type="datetime-local" id="deadline">
+    </div>
+    <button onclick="addCourse()">เพิ่มรายการ</button>
+</div>
+
+<script>
+// ข้อมูลผู้ดูแลระบบ
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password123';
+
+// เก็บข้อมูลรายวิชา
+let courses = [];
+
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        alert('เข้าสู่ระบบสำเร็จ');
+    } else {
+        alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+    }
+}
+
+function addCourse() {
+    const courseName = document.getElementById('courseName').value;
+    const courseDetails = document.getElementById('courseDetails').value;
+    const deadline = document.getElementById('deadline').value;
+    
+    if (!courseName || !courseDetails || !deadline) {
+        alert('กรุณากรอกข้อมูลให้ครบ');
+        return;
+    }
+    
+    const course = {
+        name: courseName,
+        details: courseDetails,
+        deadline: deadline,
+        id: Date.now()
+    };
+    
+    courses.push(course);
+    updateCourseList();
+    clearForm();
+}
+
+function updateCourseList() {
+    const courseList = document.getElementById('courseList');
+    courseList.innerHTML = '';
+    
+    courses.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    
+    courses.forEach(course => {
+        const courseElement = document.createElement('div');
+        courseElement.className = 'course-item card';
+        courseElement.innerHTML = `
+            <h3>${course.name}</h3>
+            <p>${course.details.replace(/\n\n/g, '</p><p>')}</p>
+            <p class="deadline">กำหนดส่ง: ${new Date(course.deadline).toLocaleString('th-TH')}</p>
+            ${isAdmin() ? `<button onclick="deleteCourse(${course.id})">ลบรายการ</button>` : ''}
+        `;
+        courseList.appendChild(courseElement);
+    });
+}
+
+function deleteCourse(id) {
+    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+        courses = courses.filter(course => course.id !== id);
+        updateCourseList();
+    }
+}
+
+function clearForm() {
+    document.getElementById('courseName').value = '';
+    document.getElementById('courseDetails').value = '';
+    document.getElementById('deadline').value = '';
+}
+
+function isAdmin() {
+    return document.getElementById('adminPanel').style.display === 'block';
+}
+
+// อัพเดทรายการทุกครั้งที่โหลดหน้า
+updateCourseList();
+</script>
+
+</body>
+</html>
