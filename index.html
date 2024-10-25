@@ -5,83 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการงานและกำหนดส่ง</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
 </head>
 <body>
+    <!-- หน้า Login -->
+    <div id="loginPage" class="login-page">
+        <div class="login-form card">
+            <h2>เข้าสู่ระบบสำหรับผู้ดูแล</h2>
+            
+            <div class="form-group">
+                <label for="username">ชื่อผู้ใช้:</label>
+                <input type="text" id="username">
+            </div>
 
-<!-- หน้า Login แยก -->
-<div class="login-page" id="loginPage">
-    <div class="login-form card">
-        <h2>เข้าสู่ระบบสำหรับผู้ดูแล</h2>
-        <div class="form-group">
-            <label>ชื่อผู้ใช้:</label>
-            <input type="text" id="username">
-        </div>
-        <div class="form-group">
-            <label>รหัสผ่าน:</label>
-            <input type="password" id="password">
-        </div>
-        <div class="remember-me">
-            <input type="checkbox" id="rememberMe">
-            <label for="rememberMe">จดจำข้อมูลการเข้าสู่ระบบ</label>
-        </div>
-        <button class="back-button" onclick="hideLogin()">กลับหน้าหลัก</button>
-        <button onclick="login()">เข้าสู่ระบบ</button>
-    </div>
-</div>
+            <div class="form-group">
+                <label for="password">รหัสผ่าน:</label>
+                <input type="password" id="password">
+            </div>
 
-<!-- หน้าหลัก -->
-<div class="main-page">
-    <div class="header">
-        <h1>ระบบจัดการงานและกำหนดส่ง</h1>
-        <div>
-            <button class="login-button" onclick="showLogin()" id="loginButton">เข้าสู่ระบบ</button>
-            <button class="logout-button" onclick="logout()" id="logoutButton" style="display: none;">ออกจากระบบ</button>
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">จดจำข้อมูลการเข้าสู่ระบบ</label>
+            </div>
+
+            <button onclick="window.location.href='index.html'" class="back-button">กลับหน้าหลัก</button>
+            <button onclick="login()" class="login-button">เข้าสู่ระบบ</button>
         </div>
     </div>
 
+    <!-- หน้าหลัก -->
+    <div class="main-page">
+        <header class="header">
+            <h1>ระบบจัดการงานและกำหนดส่ง</h1>
+            <div>
+                <button id="loginButton" onclick="showLogin()" class="login-button">เข้าสู่ระบบ</button>
+                <button id="logoutButton" onclick="logout()" class="logout-button" style="display: none;">ออกจากระบบ</button>
+            </div>
+        </header>
 
-    <!-- เมนูแอดมิน -->
-    <div class="container">
-        <div class="admin-menu" id="adminMenu">
-            <button onclick="showAddCourse()">เพิ่มรายวิชาใหม่</button>
-            <button onclick="showManageCourses()">จัดการรายวิชา</button>
-        </div>
-    </div>
-
-        <!-- หน้าแอดมิน -->
         <div class="container">
-            <div class="admin-panel" id="addCoursePanel" style="display: none;">
+            <!-- เมนูแอดมิน -->
+            <div id="adminMenu" class="admin-menu">
+                <button onclick="showAddCourse()">เพิ่มรายวิชาใหม่</button>
+                <button onclick="showManageCourses()">จัดการรายวิชา</button>
+            </div>
+
+            <!-- แผงควบคุมเพิ่มรายวิชา -->
+            <div id="addCoursePanel" class="admin-panel" style="display: none;">
                 <h2>เพิ่มรายวิชาใหม่</h2>
+                
                 <div class="form-info">
                     <button onclick="showInputExample()" class="info-button">ดูตัวอย่างการกรอกข้อมูล</button>
                 </div>
+
                 <div class="form-group">
-                    <label>ชื่อวิชา: (เว้น 2 บรรทัดเพื่อเพิ่มวิชาใหม่)</label>
-                    <textarea id="courseNames" class="course-input" rows="4" 
-                        placeholder="วิชาคณิตศาสตร์&#10;&#10;วิชาภาษาไทย"></textarea>
+                    <label for="courseNames">ชื่อวิชา: (เว้น 2 บรรทัดเพื่อเพิ่มวิชาใหม่)</label>
+                    <textarea id="courseNames" class="course-input" rows="6"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>รายละเอียด: (เว้น 2 บรรทัดเพื่อแยกรายละเอียดของแต่ละวิชา)</label>
-                    <textarea id="courseDetails" rows="6" 
-                        placeholder="เนื้อหาคณิตศาสตร์&#10;&#10;เนื้อหาภาษาไทย"></textarea>
+                    <label for="courseDetails">รายละเอียด: (เว้น 2 บรรทัดเพื่อแยกรายละเอียดของแต่ละวิชา)</label>
+                    <textarea id="courseDetails" class="course-input" rows="6"></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>กำหนดส่ง:</label>
+                    <label for="deadline">กำหนดส่ง:</label>
                     <input type="datetime-local" id="deadline">
                 </div>
+
                 <button onclick="addCourses()">บันทึกรายวิชา</button>
             </div>
-            <div class="admin-panel" id="manageCoursePanel" style="display: none;">
+
+            <!-- แผงควบคุมจัดการรายวิชา -->
+            <div id="manageCoursePanel" class="admin-panel" style="display: none;">
                 <h2>จัดการรายวิชา</h2>
                 <div id="adminCourseList"></div>
             </div>
-                <!-- หน้าแสดงรายการงาน -->
-    <div class="container" id="publicView">
-        <div id="courseList"></div>
+
+            <!-- มุมมองสาธารณะ -->
+            <div id="publicView" class="container">
+                <div id="courseList"></div>
+            </div>
+        </div>
     </div>
-</div>
-<script src="script.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
