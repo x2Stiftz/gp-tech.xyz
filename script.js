@@ -7,6 +7,9 @@ const GITHUB_TOKEN = 'github_pat_11BJHXOFA0SiOeeYXCSeB7_6gtOeSIWoLrA46lb5C068UZL
 const REPO_OWNER = 'x2Stiftz';
 const REPO_NAME = 'gp-tech.xyz';
 const FILE_PATH = 'courses.json';
+
+let courses = [];
+
 // ============ ฟังก์ชันจัดการ GitHub API ============
 async function updateGitHubFile(content) {
     try {
@@ -20,8 +23,13 @@ async function updateGitHubFile(content) {
                 }
             }
         );
-        const currentFile = await currentFileResponse.json();
         
+        if (!currentFileResponse.ok) {
+            throw new Error('Failed to fetch current file');
+        }
+        
+        const currentFile = await currentFileResponse.json();
+
         // 2. Update the file
         const response = await fetch(
             `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`,
@@ -34,34 +42,55 @@ async function updateGitHubFile(content) {
                 },
                 body: JSON.stringify({
                     message: 'Update courses data',
-                    content: btoa(content), // Convert content to base64
+                    content: btoa(content),
                     sha: currentFile.sha
                 })
             }
         );
 
         if (!response.ok) {
-            throw new Error('Failed to update file');
+            const errorData = await response.json();
+            throw new Error(`Failed to update file: ${errorData.message}`);
         }
 
         return true;
     } catch (error) {
         console.error('Error updating GitHub file:', error);
+        alert(`เกิดข้อผิดพลาดในการอัพเดทข้อมูล: ${error.message}`);
         return false;
     }
 }
 
 async function loadCourses() {
     try {
-        const response = await fetch('http://localhost:3000/courses');
-        courses = await response.json();
+        const response = await fetch(
+            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`,
+            {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch courses');
+        }
+
+        const data = await response.json();
+        const content = atob(data.sha ? data.content : '');
+        courses = JSON.parse(content || '[]');
+        
         updateCourseList();
         updateAdminCourseList();
     } catch (error) {
         console.error("Error loading courses:", error);
-        alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+        courses = []; // ใช้ array ว่างถ้าโหลดข้อมูลไม่สำเร็จ
+        updateCourseList();
+        updateAdminCourseList();
     }
 }
+
 // ============ ฟังก์ชันจัดการการล็อกอิน ============
 function showLogin() {
     document.getElementById('loginPage').style.display = 'block';
@@ -161,15 +190,14 @@ async function addCourses() {
     
     try {
         // เพิ่มรายวิชาใหม่
-        for (let i = 0; i < courseNames.length; i++) {
-            const newCourse = {
-                id: Date.now() + i,
-                name: courseNames[i].trim(),
-                details: courseDetails[i].trim(),
-                deadline: deadline
-            };
-            courses.push(newCourse);
-        }
+        const newCourses = courseNames.map((name, i) => ({
+            id: Date.now() + i,
+            name: name.trim(),
+            details: courseDetails[i].trim(),
+            deadline: deadline
+        }));
+        
+        courses = [...courses, ...newCourses];
         
         // อัพเดทไฟล์บน GitHub
         const jsonData = JSON.stringify(courses, null, 2);
@@ -178,13 +206,11 @@ async function addCourses() {
         if (updated) {
             clearForm();
             alert(`เพิ่มรายวิชาสำเร็จ ${courseNames.length} รายวิชา`);
-            loadCourses(); // โหลดข้อมูลใหม่
-        } else {
-            alert('เกิดข้อผิดพลาดในการอัพเดทข้อมูล');
+            await loadCourses(); // โหลดข้อมูลใหม่
         }
     } catch (error) {
         console.error("Error adding courses:", error);
-        alert('เกิดข้อผิดพลาดในการเพิ่มรายวิชา');
+        alert(`เกิดข้อผิดพลาดในการเพิ่มรายวิชา: ${error.message}`);
     }
 }
 
