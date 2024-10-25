@@ -3,7 +3,7 @@ const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'password123';
 
 // ============ ตัวแปรการตั้งค่า GitHub ============
-const GITHUB_TOKEN = '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'; // Personal Access Token จาก GitHub
+const GITHUB_TOKEN = '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'; // Personal Access Token จาก GitHub
 const REPO_OWNER = 'x2Stiftz';
 const REPO_NAME = 'gp-tech.xyz';
 const FILE_PATH = 'courses.json';
